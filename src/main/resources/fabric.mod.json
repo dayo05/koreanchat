@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "koreanchat",
+  "version": "${version}",
+  "name": "koreanchat",
+  "description": "",
+  "authors": [],
+  "contact": {
+    "repo": "https://github.com/dayo/koreanchat"
+  },
+  "license": "MIT",
+  "icon": "assets/koreanchat/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "me.ddayo.koreanchat.client.KoreanChatClient::init"
+      }
+    ]
+  },
+  "mixins": [
+    "koreanchat.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": ">=1.19.3",
+    "fabric-language-kotlin": ">=1.9.4+kotlin.1.8.21"
+  }
+}
