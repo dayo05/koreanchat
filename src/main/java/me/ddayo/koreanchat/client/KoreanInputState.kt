@@ -2,9 +2,12 @@ package me.ddayo.koreanchat.client
 
 import me.ddayo.koreanchat.client.ime.EnglishIM
 import me.ddayo.koreanchat.client.ime.KoreanIM
+import me.ddayo.koreanchat.client.ime.acceptable.IIMEAcceptable
+import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.screen.ingame.BookEditScreen
 import net.minecraft.client.gui.widget.TextFieldWidget
 import org.lwjgl.glfw.GLFW
+import java.util.Stack
 
 object KoreanInputState {
     private var currentIME = 1
@@ -13,11 +16,17 @@ object KoreanInputState {
         KoreanIM
     )
 
-    val ime get() = imeList[currentIME]
-    private var currentInput: TextFieldWidget? = null
-    val isActive get() = currentInput != null
-    fun change(input: TextFieldWidget?) {
-        currentInput = input
+    private val ime get() = imeList[currentIME]
+    private val acceptableStack = Stack<IIMEAcceptable>()
+    private val currentInput get() = if(acceptableStack.isEmpty()) null else acceptableStack.peek()
+    val isActive get() = acceptableStack.isNotEmpty()
+    fun push(input: IIMEAcceptable) {
+        acceptableStack.push(input)
+        actionCheck = false
+    }
+
+    fun pop() {
+        acceptableStack.pop()
         actionCheck = false
     }
 
@@ -37,30 +46,27 @@ object KoreanInputState {
         }
         if (keyCode == GLFW.GLFW_KEY_BACKSPACE) {
             if(modify) {
-                updateText(backspace())
+                applyUpdate(backspace(), scanCode)
                 mark()
             }
-            else updateText(EnglishIM.backspace(currentInput!!.text, currentInput!!.cursor))
+            else applyUpdate(EnglishIM.backspace(currentInput!!.text, currentInput!!.cursor), scanCode)
             return
         } else if (!checkModifier(keyCode)) return
 
-        updateText(ime.insert(currentInput!!.text, ime.ch(keyCode, modifier), currentInput!!.cursor, modify))
+        applyUpdate(ime.insert(currentInput!!.text, ime.ch(keyCode, modifier), currentInput!!.cursor, modify), scanCode)
+
         mark()
     }
 
-    private fun backspace(): String {
-        return if (currentInput!!.cursor == 0) currentInput!!.text else imeList.firstOrNull { it.isRegion(currentInput!!.text[currentInput!!.cursor - 1]) }
-            ?.backspace(currentInput!!.text, currentInput!!.cursor) ?: currentInput!!.text.let { str ->
-                currentInput!!.cursor.let { pos ->
-                    if (pos == str.length) str.dropLast(1) else str.substring(0, pos - 1) + str.substring(pos)
-                }
-        }
+    private fun applyUpdate(p: Pair<String, Int>, scanCode: Int) {
+        val (newText, rewritten) = p
+        currentInput?.accept(newText, rewritten)
     }
 
-    private fun updateText(text: String) {
-        val cur = currentInput!!.cursor - currentInput!!.text.length
-        currentInput!!.text = text
-        currentInput!!.cursor = cur + currentInput!!.text.length
+    private fun backspace(): Pair<String, Int> {
+        if(currentInput!!.cursor == 0) return "" to 0
+        return (imeList.firstOrNull { it.isRegion(currentInput!!.text[currentInput!!.cursor - 1])} ?: EnglishIM)
+            .backspace(currentInput!!.text, currentInput!!.cursor)
     }
 
     private fun checkModifier(x: Int) = x in 'A'.code..'Z'.code

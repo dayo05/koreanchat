@@ -6,6 +6,8 @@
   "mixins": [
   ],
   "client": [
+    "AbstractSignEditScreenJ",
+    "BookEditScreenJ",
     "KeyboardJ",
     "TextFieldWidgetJ"
   ],

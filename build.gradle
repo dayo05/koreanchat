@@ -68,3 +68,7 @@ publishing {
 kotlin {
     jvmToolchain(17)
 }
+
+loom {
+    accessWidenerPath = file("src/main/resources/koreanchat.accesswidener")
+}

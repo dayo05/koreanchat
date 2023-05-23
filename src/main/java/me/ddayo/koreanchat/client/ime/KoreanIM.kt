@@ -20,82 +20,58 @@ object KoreanIM: IIM {
 
     fun hasFinal(c: Char) = (c.code - 44032) % 28 != 0
 
-    override fun backspace(str: String, pos: Int): String {
-        if (pos == 0) return str
+    override fun backspace(str: String, pos: Int): Pair<String, Int> {
         val c = str[pos - 1]
         if (isJamo(c))
-            return if (pos == str.length) str.dropLast(1) else str.substring(0, pos - 1) + str.substring(pos)
+            return "" to 1
         // [(initial) × 588 + (medial) × 28 + (final)] + 44032
         val x = c.code - 44032
         if (hasFinal(c)) {
             decompress((c.code - 44032) % 28)?.let {
-                return StringBuilder(str).apply {
-                    setCharAt(pos - 1, (x - (x % 28) + it.first + 44032).toChar())
-                }.toString()
+                return (x - (x % 28) + it.first + 44032).toChar().toString() to 1
             } ?: run {
-                return StringBuilder(str).apply {
-                    setCharAt(pos - 1, (x - (x % 28) + 44032).toChar())
-                }.toString()
+                return (x - (x % 28) + 44032).toChar().toString() to 1
             }
         } else {
             decompressVowel((x / 28) % 21)?.let {
-                return StringBuilder(str).apply {
-                    setCharAt(pos - 1, (c.code - 28 * (x / 28 % 21 - it.first)).toChar())
-                }.toString()
+                return (c.code - 28 * (x / 28 % 21 - it.first)).toChar().toString() to 1
             } ?: run {
-                return StringBuilder(str).apply {
-                    setCharAt(pos - 1, initialBiasToJamo(x / 28 / 21))
-                }.toString()
+                return initialBiasToJamo(x / 28 / 21).toString() to 1
             }
         }
     }
 
-    override fun insert(str: String, ch: Char, pos: Int, modify: Boolean): String {
+    override fun insert(str: String, ch: Char, pos: Int, modify: Boolean): Pair<String, Int> {
         try {
             if (modify && pos != 0) {
                 val c = str[pos - 1]
                 if (isConsonants(ch)) {
-                    if (!isComplatedChar(c)) return StringBuilder(str).insert(pos, ch).toString()
-                    if (!hasFinal(c)) return StringBuilder(str).apply {
-                        setCharAt(pos - 1, (c.code + finalBiasTransform(ch)).toChar())
-                    }.toString()
+                    if (!isComplatedChar(c))
+                        return ch.toString() to 0
+                    if (!hasFinal(c))
+                        return (c.code + finalBiasTransform(ch)).toChar().toString() to 1
                     val k = combineFinal((c.code - 44032) % 28, finalBiasTransform(ch))
-                    if (k != -1) return StringBuilder(str).apply {
-                        setCharAt(pos - 1, (c.code - ((c.code - 44032) % 28) + k).toChar())
-                    }.toString()
+                    if (k != -1) return (c.code - ((c.code - 44032) % 28) + k).toChar().toString() to 1
                 } else {
                     if (isComplatedChar(c) && !hasFinal(c)) {
                         val k = compressVowel(((c.code - 44032) / 28) % 21, middleBiasTransform(ch))
                         return if (k == -1)
-                            StringBuilder(str).insert(pos, ch).toString()
-                        else StringBuilder(str).apply {
-                            setCharAt(pos - 1, (c.code - (c.code - 44032) % 588 + k * 28).toChar())
-                        }.toString()
+                            ch.toString() to 0
+                        else (c.code - (c.code - 44032) % 588 + k * 28).toChar().toString() to 1
                     }
                     if (!isComplatedChar(c)) {
-                        return StringBuilder(str).apply {
-                            setCharAt(
-                                pos - 1,
-                                (44032 + 588 * initialBiasTransform(c) + 28 * middleBiasTransform(ch)).toChar()
-                            )
-                        }.toString()
+                        return (44032 + 588 * initialBiasTransform(c) + 28 * middleBiasTransform(ch)).toChar().toString() to 1
                     }
                     val bs = (c.code - 44032) % 28
                     val (k1, k2) = decompress(bs) ?: (0 to bs)
-                    return StringBuilder(str).apply {
-                        setCharAt(
-                            pos - 1,
-                            (c.code - bs + k1).toChar()
-                        )
-                        insert(pos, (44032 + 588 * finalToInitBias(k2) + 28 * middleBiasTransform(ch)).toChar())
-                    }.toString()
+                    return "${(c.code - bs + k1).toChar()}${(44032 + 588 * finalToInitBias(k2) + 28 * middleBiasTransform(ch)).toChar()}" to 1
                 }
             } else {
-                if (pos == str.length) return str + ch
+                if (pos == str.length) return ch.toString() to 0
             }
         } catch (_: Exception) {
         }
-        return StringBuilder(str).insert(pos, ch).toString()
+        return ch.toString() to 0
     }
 
     override fun ch(kp: Int, modifier: Int) = when (kp) {

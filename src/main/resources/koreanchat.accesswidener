@@ -1,0 +1,16 @@
+accessWidener v1 named
+
+accessible field net/minecraft/client/gui/screen/ingame/BookEditScreen currentPageSelectionManager Lnet/minecraft/client/util/SelectionManager;
+accessible method net/minecraft/client/gui/screen/ingame/BookEditScreen getCurrentPageContent ()Ljava/lang/String;
+accessible method net/minecraft/client/gui/screen/ingame/BookEditScreen invalidatePageContent ()V
+accessible field net/minecraft/client/gui/screen/ingame/BookEditScreen signing Z
+accessible field net/minecraft/client/gui/screen/ingame/BookEditScreen title Ljava/lang/String;
+accessible field net/minecraft/client/gui/screen/ingame/BookEditScreen bookTitleSelectionManager Lnet/minecraft/client/util/SelectionManager;
+accessible field net/minecraft/client/gui/screen/ingame/BookEditScreen dirty Z
+accessible method net/minecraft/client/gui/screen/ingame/BookEditScreen updateButtons ()V
+
+accessible field net/minecraft/client/gui/screen/ingame/AbstractSignEditScreen selectionManager Lnet/minecraft/client/util/SelectionManager;
+accessible field net/minecraft/client/gui/screen/ingame/AbstractSignEditScreen currentRow I
+accessible field net/minecraft/client/gui/screen/ingame/AbstractSignEditScreen messages [Ljava/lang/String;
+
+

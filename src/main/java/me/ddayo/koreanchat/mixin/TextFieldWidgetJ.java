@@ -1,6 +1,7 @@
 package me.ddayo.koreanchat.mixin;
 
 import me.ddayo.koreanchat.client.KoreanInputState;
+import me.ddayo.koreanchat.client.ime.acceptable.TextFieldAcceptable;
 import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
@@ -18,8 +19,8 @@ abstract class TextFieldWidgetJ extends ClickableWidget {
     @Inject(method = "setFocused", at = @At("RETURN"))
     public void setFocusedHook(boolean focused, CallbackInfo ci) {
         if(focused)
-            KoreanInputState.INSTANCE.change((TextFieldWidget) (Object) this);
-        else KoreanInputState.INSTANCE.change(null);
+            KoreanInputState.INSTANCE.push(new TextFieldAcceptable((TextFieldWidget) (Object) this));
+        else KoreanInputState.INSTANCE.pop();
     }
 
     @Inject(method = "setCursor", at = @At("RETURN"))

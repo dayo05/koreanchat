@@ -26,5 +26,6 @@
     "fabricloader": ">=${loader_version}",
     "minecraft": ">=1.19.3",
     "fabric-language-kotlin": ">=1.9.4+kotlin.1.8.21"
-  }
+  },
+  "accessWidener" : "koreanchat.accesswidener"
 }
